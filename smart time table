@@ -1,0 +1,470 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Study Planner | GATE Electrical</title><style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+header {
+    background: #172554;
+    color: white;
+    padding: 25px 15px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0 0 10px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 20px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #0000000c;
+}
+
+.card h3 {
+    margin-top: 0;
+    color: #1d4ed8;
+}
+
+.panel {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 3px 12px #0000000c;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+th {
+    background: #dbeafe;
+}
+
+tr.done td {
+    color: #64748b;
+    text-decoration: line-through;
+}
+
+button, select {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button {
+    background: #2563eb;
+    color: white;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+.secondary {
+    background: #475569;
+}
+
+.success {
+    background: #15803d;
+}
+
+input[type="text"] {
+    padding: 10px;
+    width: 65%;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+}
+
+.progress-bg {
+    background: #e2e8f0;
+    height: 14px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#progressBar {
+    width: 0%;
+    height: 100%;
+    background: #22c55e;
+    transition: width .3s;
+}
+
+#clock {
+    font-size: 26px;
+    font-weight: bold;
+    color: #1d4ed8;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #64748b;
+}
+
+@media(max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+
+    .panel {
+        padding: 12px;
+        overflow-x: auto;
+    }
+
+    th, td {
+        padding: 9px 6px;
+        font-size: 12px;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}
+</style></head><body><header>
+    <h1>🎓 Smart Study Planner</h1>
+    <p>B.Tech Electrical Engineering | 5th Semester + GATE</p>
+    <div id="clock">Loading time...</div>
+    <p id="today"></p>
+</header><div class="container"><div class="cards">
+    <div class="card">
+        <h3>📚 Today's Tasks</h3>
+        <p id="totalTasks">0</p>
+    </div>
+
+    <div class="card">
+        <h3>✅ Completed</h3>
+        <p id="completedTasks">0</p>
+    </div>
+
+    <div class="card">
+        <h3>📊 Daily Progress</h3>
+        <p id="progressText">0%</p>
+        <div class="progress-bg">
+            <div id="progressBar"></div>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <h2>🔔 Study Alarm & Notifications</h2>
+    <p>Study time par reminder paane ke liye alarm enable karo.</p>
+    <button onclick="enableNotifications()">Enable Notifications</button>
+    <button class="secondary" onclick="testAlarm()">Test Sound</button>
+    <p id="alarmStatus">Alarm abhi enable nahi hai.</p>
+    <small>Reminder ke liye website khuli rakho. Browser notifications ki permission zaroori hai. Laptop silent ya sleep mode mein ho toh alarm miss ho sakta hai.</small>
+</div>
+
+<div class="panel">
+    <h2>📅 Daily Study Timetable</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Activity</th>
+                <th>Category</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="schedule"></tbody>
+    </table>
+</div>
+
+<div class="panel">
+    <h2>⚡ GATE Electrical Preparation</h2>
+    <p>GATE subject ko select karke apni preparation plan karo.</p>
+
+    <select id="gateSubject">
+        <option>Engineering Mathematics</option>
+        <option>Electric Circuits</option>
+        <option>Electromagnetic Fields</option>
+        <option>Electrical Machines</option>
+        <option>Power Systems</option>
+        <option>Control Systems</option>
+        <option>Electrical Measurements</option>
+        <option>Power Electronics</option>
+        <option>Signals and Systems</option>
+        <option>General Aptitude</option>
+    </select>
+
+    <br><br>
+    <input type="text" id="gateTopic"
+           placeholder="Aaj ka topic likho">
+    <button onclick="addGateTask()">Add GATE Task</button>
+
+    <ul id="gateTasks"></ul>
+</div>
+
+<div class="panel">
+    <h2>📝 Quick Notes</h2>
+    <textarea id="notes" rows="4"
+        style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:8px"
+        placeholder="Aaj kya padhna hai? Important topics likho..."></textarea>
+    <br><br>
+    <button onclick="saveNotes()">Save Notes</button>
+    <span id="notesStatus"></span>
+</div>
+
+</div><footer>
+    Smart Study Planner | Study consistently, improve every day.
+</footer><script>
+const baseSchedule = [
+    {time:"6:00 AM", end:"6:30 AM", task:"Fresh hona", category:"Routine"},
+    {time:"6:30 AM", end:"7:00 AM", task:"Breakfast aur ready hona", category:"Routine"},
+    {time:"7:00 AM", end:"8:00 AM", task:"GATE Preparation", category:"GATE"},
+    {time:"8:00 AM", end:"9:00 AM", task:"Switchgear & Protection", category:"College"},
+    {time:"9:00 AM", end:"9:30 AM", task:"College travel", category:"Routine"},
+    {time:"9:30 AM", end:"3:00 PM", task:"College Classes", category:"College"},
+    {time:"3:00 PM", end:"4:15 PM", task:"Travel / Return", category:"Routine"},
+    {time:"4:15 PM", end:"5:00 PM", task:"Cooking, food & rest", category:"Routine"},
+    {time:"5:00 PM", end:"5:30 PM", task:"Break / Freshen up", category:"Break"},
+    {time:"5:30 PM", end:"7:00 PM", task:"Electromagnetic Fields (EMFT)", category:"College"},
+    {time:"7:00 PM", end:"8:00 PM", task:"Advanced Control Systems", category:"College"},
+    {time:"8:00 PM", end:"9:00 PM", task:"Electrical Measurements", category:"College"},
+    {time:"9:00 PM", end:"11:00 PM", task:"Power Electronics & Drives", category:"College"},
+    {time:"11:00 PM", end:"11:30 PM", task:"GATE PYQs & Revision", category:"GATE"},
+    {time:"11:30 PM", end:"6:00 AM", task:"Sleep", category:"Rest"}
+];
+
+let completed = JSON.parse(localStorage.getItem("completedTasks") || "{}");
+let gateList = JSON.parse(localStorage.getItem("gateList") || "[]");
+let notified = {};
+let notificationEnabled = false;
+
+function updateClock() {
+    const now = new Date();
+    document.getElementById("clock").textContent =
+        now.toLocaleTimeString("en-IN", {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    document.getElementById("today").textContent =
+        now.toLocaleDateString("en-IN", {weekday:"long",day:"numeric",month:"long",year:"numeric"});
+}
+
+function renderSchedule() {
+    const tbody = document.getElementById("schedule");
+    tbody.innerHTML = "";
+
+    baseSchedule.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        if (completed[index]) tr.classList.add("done");
+
+        tr.innerHTML = `
+            <td>${item.time} – ${item.end}</td>
+            <td>${item.task}</td>
+            <td>${item.category}</td>
+            <td><button class="${completed[index] ? 'success' : ''}"
+                onclick="toggleTask(${index})">
+                ${completed[index] ? 'Completed ✓' : 'Mark Done'}
+            </button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    updateProgress();
+}
+
+function toggleTask(index) {
+    completed[index] = !completed[index];
+    localStorage.setItem("completedTasks", JSON.stringify(completed));
+    renderSchedule();
+}
+
+function updateProgress() {
+    const total = baseSchedule.length;
+    const count = Object.values(completed).filter(Boolean).length;
+    const percent = Math.round(count / total * 100);
+
+    document.getElementById("totalTasks").textContent = total;
+    document.getElementById("completedTasks").textContent = count;
+    document.getElementById("progressText").textContent = percent + "%";
+    document.getElementById("progressBar").style.width = percent + "%";
+}
+
+async function enableNotifications() {
+    if (!("Notification" in window)) {
+        document.getElementById("alarmStatus").textContent =
+            "Is browser mein notifications supported nahi hain.";
+        return;
+    }
+
+    const permission = await Notification.requestPermission();
+
+    if (permission === "granted") {
+        notificationEnabled = true;
+        document.getElementById("alarmStatus").textContent =
+            "Notifications enabled. Website khuli rakho.";
+        new Notification("Study Planner", {
+            body:"Study reminders enabled hain!"
+        });
+    } else {
+        document.getElementById("alarmStatus").textContent =
+            "Browser settings mein notifications allow karo.";
+    }
+}
+
+function playSound() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+        oscillator.frequency.value = 880;
+        gain.gain.value = 0.15;
+        oscillator.start();
+
+        setTimeout(() => {
+            oscillator.stop();
+            ctx.close();
+        }, 600);
+    } catch(e) {
+        alert("Sound play nahi ho saka. Browser mein dobara try karo.");
+    }
+}
+
+function testAlarm() {
+    playSound();
+    if (notificationEnabled) {
+        new Notification("Test Alarm", {
+            body:"Ab padhai karne ka time hai!"
+        });
+    } else {
+        alert("Sound test kiya gaya. Notifications ke liye Enable Notifications dabao.");
+    }
+}
+
+function checkAlarms() {
+    if (!notificationEnabled || Notification.permission !== "granted") return;
+
+    const now = new Date();
+    const current = now.getHours() + ":" + now.getMinutes();
+    const keyDate = now.toDateString();
+
+    baseSchedule.forEach((item, index) => {
+        const match = item.time.match(/^(\d{1,2}):(\d{2}) (AM|PM)$/);
+        if (!match) return;
+
+        let hour = Number(match[1]);
+        const minute = Number(match[2]);
+        const period = match[3];
+
+        if (period === "PM" && hour !== 12) hour += 12;
+        if (period === "AM" && hour === 12) hour = 0;
+
+        const alarmTime = hour + ":" + minute;
+        const alarmKey = keyDate + "-" + index;
+
+        if (current === alarmTime && !notified[alarmKey]) {
+            notified[alarmKey] = true;
+            new Notification("Study Time!", {
+                body: item.task + " — ab padhai shuru karo."
+            });
+            playSound();
+        }
+    });
+}
+
+function addGateTask() {
+    const subject = document.getElementById("gateSubject").value;
+    const topic = document.getElementById("gateTopic").value.trim();
+
+    if (!topic) {
+        alert("Pehle GATE topic likho.");
+        return;
+    }
+
+    gateList.push({subject, topic, done:false});
+    localStorage.setItem("gateList", JSON.stringify(gateList));
+    document.getElementById("gateTopic").value = "";
+    renderGateTasks();
+}
+
+function renderGateTasks() {
+    const list = document.getElementById("gateTasks");
+    list.innerHTML = "";
+
+    gateList.forEach((item, index) => {
+        const li = document.createElement("li");
+        li.style.margin = "10px 0";
+
+        const label = document.createElement("span");
+        label.textContent = item.subject + ": " + item.topic +
+            (item.done ? " ✓" : "");
+
+        if (item.done) label.style.textDecoration = "line-through";
+
+        const doneBtn = document.createElement("button");
+        doneBtn.style.marginLeft = "10px";
+        doneBtn.textContent = item.done ? "Undo" : "Done";
+        doneBtn.onclick = () => {
+            gateList[index].done = !gateList[index].done;
+            localStorage.setItem("gateList", JSON.stringify(gateList));
+            renderGateTasks();
+        };
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.style.marginLeft = "5px";
+        deleteBtn.className = "secondary";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.onclick = () => {
+            gateList.splice(index, 1);
+            localStorage.setItem("gateList", JSON.stringify(gateList));
+            renderGateTasks();
+        };
+
+        li.append(label, doneBtn, deleteBtn);
+        list.appendChild(li);
+    });
+}
+
+function saveNotes() {
+    localStorage.setItem("studyNotes", document.getElementById("notes").value);
+    document.getElementById("notesStatus").textContent = " Notes saved!";
+}
+
+document.getElementById("notes").value =
+    localStorage.getItem("studyNotes") || "";
+
+updateClock();
+setInterval(updateClock, 1000);
+setInterval(checkAlarms, 10000);
+renderSchedule();
+renderGateTasks();
+</script></body>
+</html>
